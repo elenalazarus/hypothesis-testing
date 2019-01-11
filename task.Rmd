@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+##Part 1
+
+Here we generate our data
+
+```{r}
+library("BSDA")
+library("EnvStats")
+n <- 38
+f <- function(k, ...) {
+  a_k = (k*log(k^2*n + pi))%%1
+  return (a_k)
+}
+
+a.data <- sapply(1:150, f)
+x_k <- qnorm(a.data[1:100])
+y_l <- qnorm(a.data[101:150])
+
+x_k
+
+```
+
+
+
+**Problem 1**
+
+Since we don't have variance we have to use t-test. $C_{0,05} = x \in R^{100}: T(x) \leq t^{99}_{0,05}$
+
+```{r}
+library("BSDA")
+library("EnvStats")
+t.test(x_k, alternative = "l")
+```
+
+Here we can see that p-value = 0.646, so it is bigger than 0.05. It means that we have to accept $H_0$.
+
+
+**Problem 2**
+
+Variance is known and we want to test mean. In such case we have to use z-test.
+
+```{r}
+library("BSDA")
+library("EnvStats")
+z.test(x_k, y_l, sigma.x = sqrt(2), sigma.y = sqrt(2), mu = 0, alternative = "t")
+```
+
+Here we can see that p-value = 0.9449, so it is bigger than 0.05. It means that we have to accept $H_0$.
+
+**Problem 3**
+
+We want to test variance so we will use chi-squared test.
+
+```{r}
+library("BSDA")
+library("EnvStats")
+varTest(x_k)
+```
+
+
+Here we can see that p-value = 0.4028, so it is bigger than 0.05. It means that we have to accept $H_0$.
+
+**Problem 4**
+
+We don't know mean so we will use f-test to compare variances.
+
+```{r}
+library("BSDA")
+library("EnvStats")
+var.test(x_k, y_l, alternative = "g")
+```
+
+Here we can see that p-value = 0.1328, so it is bigger than 0.05. It means that we have to accept $H_0$.
+
+
+##Part 2
+
+**Problem 5**
+
+Let's generate our data
+
+```{r}
+n <- 38
+q <- function(k, ...) {
+  x_k = 10 * (1 + cos(k*n))
+}
+
+p <- function(k, ...) {
+  y_k = sin(n + cos(k^2)) + cos(n + sin(k^2)/k) * (1 + sin(k^2)/k) * q(k)
+}
+
+x.data <- sapply(1:50, q)
+y.data <- sapply(1:50, p)
+```
+
+
+And now we will get the summary about our model
+```{r}
+lm.f <- lm(x.data ~ y.data)
+
+summary(lm.f)
+
+```
+Here is also estimate of parameters a b, and $\sigma^2$
+
+```{r}
+coef(lm.f)
+```
+
+Our confidence interval
+
+```{r}
+predict(lm.f, interval = 'confidence')
+
+```
